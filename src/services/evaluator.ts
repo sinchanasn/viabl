@@ -20,6 +20,27 @@ export async function evaluateStartupIdea(
   onStepProgress?.('Convening Investment Committee (VC, Founder, CTO, Marketer)...');
   await delay(600);
 
+  // Attempt Backend API call first if available
+  try {
+    onStepProgress?.('Transmitting docket to Viabl Due Diligence Backend API...');
+    const backendRes = await fetch('/api/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...input, settings })
+    });
+
+    if (backendRes.ok) {
+      onStepProgress?.('Investment Committee review ratified by Backend Diligence Engine.');
+      await delay(400);
+      const data = await backendRes.json();
+      if (data && data.overallViabilityScore) {
+        return data as EvaluationResult;
+      }
+    }
+  } catch (err) {
+    console.info('Backend API unavailable, using in-browser heuristic engine:', err);
+  }
+
   // If Gemini API Key is provided and mode allows, attempt direct Gemini API call
   if (settings?.geminiApiKey && (settings.preferredEngine === 'gemini' || settings.preferredEngine === 'auto')) {
     try {
