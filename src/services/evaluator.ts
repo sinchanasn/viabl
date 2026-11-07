@@ -82,11 +82,124 @@ function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function generateVentureSpecificDebate(params: {
+  ventureName: string;
+  description: string;
+  icp: string;
+  monetization: string;
+  verdict: VerdictType;
+  score: number;
+  isAI: boolean;
+  isB2B: boolean;
+  isMarketplace: boolean;
+  isConsumer: boolean;
+  isDevTools: boolean;
+  isHealth: boolean;
+  isLocal: boolean;
+  isFinTech: boolean;
+}): { speaker: string; role: string; message: string }[] {
+  const { ventureName, icp, monetization, verdict, score, isAI, isB2B, isMarketplace, isConsumer, isDevTools, isHealth, isLocal, isFinTech } = params;
+  const turns: { speaker: string; role: string; message: string }[] = [];
+
+  // 1. Marcus Vance (Founder perspective: Ground reality, customer pain & onboarding hurdle)
+  let marcusMessage = '';
+  if (isDevTools) {
+    marcusMessage = `When evaluating ${ventureName}, you have to look at the daily friction for ${icp}. Engineers despise administrative overhead, but their default reaction to new tooling is deep skepticism. If onboarding ${ventureName} requires a complex YAML config or intrusive repository permissions, adoption will stall in week one. Marcus's rule: you must deliver a clean 'Aha!' moment in under three minutes from auth.`;
+  } else if (isHealth || isFinTech) {
+    marcusMessage = `In regulated sectors like this, ${icp} aren't shopping for another dashboard; they are terrified of audit fines, vendor questionnaire failure, and compliance liability. For ${ventureName}, the hurdle isn't convincing them the problem exists—it's establishing enough trust so an executive will risk their regulatory standing on an early-stage product.`;
+  } else if (isMarketplace) {
+    marcusMessage = `Marketplaces look deceptive on paper. Everyone gets excited about connecting ${icp}, but the cold-start reality of ${ventureName} will be brutal. If a user opens the platform and sees sparse supply in their area or takes 48 hours to get a response, they churn forever. You cannot launch broadly; you must manufacture artificial liquidity in one single micro-niche first.`;
+  } else if (isConsumer) {
+    marcusMessage = `My primary concern for ${ventureName} is Day-30 retention. Consumer applications get easy top-of-funnel curiosity, but if ${icp} only uses this when they are bored or as a novelty, cohort retention will fall off a cliff. If they aren't returning three times a week organically, no amount of marketing will fix unit economics.`;
+  } else if (isLocal) {
+    marcusMessage = `Physical and local service operations live and die on labor reliability, scheduling density, and dispute handling. For ${ventureName}, software is only 20% of the challenge; the other 80% is operational fulfillment and making sure ${icp} get consistent service every single time.`;
+  } else {
+    marcusMessage = `Look at the day-to-day workflow of ${icp}. Right now, how are they dealing with this? They are hacking together spreadsheets, manual emails, or clunky legacy software. For ${ventureName} to succeed, the pain has to be top-of-mind—not something they think about once a quarter, but an operational bottleneck they actively complain about on Slack today.`;
+  }
+  turns.push({
+    speaker: 'Marcus Vance',
+    role: 'Startup Founder',
+    message: marcusMessage
+  });
+
+  // 2. Dr. Aris Thorne (CTO perspective: Architectural feasibility, API cost, security, edge cases)
+  let arisMessage = '';
+  if (isAI) {
+    arisMessage = `From an architectural standpoint for ${ventureName}, do not build a thin prompt wrapper around upstream LLMs. If OpenAI or Anthropic drops latency by 50% or releases a native feature next quarter, your product disappears. The engineering moat must come from proprietary state caching, domain-specific AST parsers, and deterministic validation rather than pure generative token guessing. Also, watch the token compute margin squeeze under high concurrency.`;
+  } else if (isDevTools) {
+    arisMessage = `Architecturally, ${ventureName} should be designed as a stateless, asynchronous event-driven worker engine. When webhooks fire, workers must parse diffs, isolate code execution in ephemeral memory to respect client security boundaries, and post results without timing out. Keep the core runtime decoupled so on-prem enterprise deployments are trivial down the road.`;
+  } else if (isHealth || isFinTech) {
+    arisMessage = `The technical risk for ${ventureName} isn't writing the application code—it's data isolation, encryption-at-rest with customer-managed keys, and maintaining immutable audit trails. If we sign Business Associate Agreements (BAAs) or process sensitive client records, SOC2 Type II compliance and zero data persistence policies must be baked into the schema on Day 1.`;
+  } else if (isMarketplace) {
+    arisMessage = `The core tech stack for ${ventureName} is straightforward—Stripe Connect for split escrows, Postgres, and geolocation indexing. But the engineering friction will be edge cases: fraud prevention, chargeback handling, automated calendar sync, and real-time messaging without letting users leak personal phone numbers to bypass fees.`;
+  } else {
+    arisMessage = `From an engineering perspective, the initial scope for ${ventureName} is realistic for a two-person team to ship in 30 to 45 days. Keep the infrastructure boring: a modular monolith, managed relational database, and queue-backed background workers. Avoid premature microservices until you have paying customers straining database read-replicas.`;
+  }
+  turns.push({
+    speaker: 'Dr. Aris Thorne',
+    role: 'Fractional CTO',
+    message: arisMessage
+  });
+
+  // 3. Elena Rostova (VC perspective: TAM, ACV, Pricing power, Margins & Defensibility)
+  let elenaMessage = '';
+  if (isMarketplace) {
+    elenaMessage = `Let's look at Gross Merchandise Value (GMV) and take-rates for ${ventureName}. With ${monetization}, what is the average transaction size? If an order is under $50, taking a small commission or platform fee yields razor-thin net revenue per transaction. You need astronomical booking frequency to return a seed fund. Even more critical: how do you prevent disintermediation when ${icp} take transaction #2 offline?`;
+  } else if (isB2B) {
+    elenaMessage = `Let's analyze the economic fundamentals of ${ventureName}. With ${monetization}, what is the realistic Annual Contract Value (ACV)? If you price at $299 to $999 per month, you only need 1,000 to 3,000 mid-market accounts to build a $10M ARR venture that commands a strong valuation. Because this targets ${icp}, you have corporate discretionary budget lines. But you must demonstrate net revenue retention (NRR) expansion over 12 months.`;
+  } else if (isConsumer) {
+    elenaMessage = `From an institutional fund perspective, ${ventureName} faces consumer willingness-to-pay elasticity. If consumers are asked to pay monthly for this, churn could easily exceed 8% per month. Unless you build an undeniable daily habit or unlock high-ticket transaction commerce, consumer subscription unit economics will be crushed by ad acquisition costs.`;
+  } else {
+    elenaMessage = `Let's examine the pricing leverage of ${ventureName}. If you charge under ${monetization}, is the ROI immediately quantifiable for the buyer? If a tool saves 10 hours a week or $5,000 in operational waste, pricing shouldn't be timid. I'd rather see this venture price confidently into high-conviction pilot customers than compete in a race to the bottom on price.`;
+  }
+  turns.push({
+    speaker: 'Elena Rostova',
+    role: 'Venture Capitalist',
+    message: elenaMessage
+  });
+
+  // 4. Chloe Lin (Growth Strategist perspective: CAC/LTV, Distribution wedges, PLG)
+  let chloeMessage = '';
+  if (isDevTools || (isB2B && isAI)) {
+    chloeMessage = `You cannot rely on Google Ads or outbound SDR spam to acquire ${icp} for ${ventureName}. The winning distribution playbook here is Product-Led Growth (PLG): build a free developer utility, interactive sandbox, or open-source CLI that solves one acute micro-problem instantly. Let engineers experience the speed gains for free, and make every public output carry a discreet watermark that brings in their peers at zero CAC.`;
+  } else if (isMarketplace) {
+    chloeMessage = `For ${ventureName}, forget nationwide marketing. Focus 100% of your energy on supply-side acquisition in a single zip code or niche vertical. Once you have dense, high-quality supply, you can activate demand through hyper-targeted local partnerships and community channels. You need a 3:1 LTV to CAC ratio within 6 months of cohort maturity.`;
+  } else if (isHealth || isFinTech) {
+    chloeMessage = `Distribution to ${icp} requires high-trust institutional credibility. For ${ventureName}, growth won't come from social media; it comes from publishing forensic teardowns of compliance failures, hosting private executive dinners, and partnering with industry accelerators where early-stage founders are desperate for audit clearance.`;
+  } else if (isConsumer) {
+    chloeMessage = `If ${ventureName} doesn't have an organic viral K-factor or a built-in reason for ${icp} to share outputs with their friends, the venture is at the mercy of paid Meta and TikTok ads. You need to engineer shareable artifacts or status mechanics directly into the core user loop.`;
+  } else {
+    chloeMessage = `To de-risk customer acquisition for ${ventureName}, identify the exact online and offline watering holes where ${icp} congregate. Deliver free value upfront through benchmarks, templates, or calculators before asking for a credit card. Aim for a payback period on CAC under six months.`;
+  }
+  turns.push({
+    speaker: 'Chloe Lin',
+    role: 'Growth Marketer',
+    message: chloeMessage
+  });
+
+  // 5. Elena Rostova or Marcus Vance (Consensus conclusion based on Verdict)
+  let closingMessage = '';
+  if (verdict === 'BUILD') {
+    closingMessage = `The committee consensus on ${ventureName} is clear: RECOMMENDATION BUILD (Score: ${score}/100). The market pull from ${icp} is genuine, the technical boundaries are manageable, and the unit economics support venture-scale growth. Next actionable milestone: secure five signed pilot Letters of Intent (LOIs) with target buyers before writing code.`;
+  } else if (verdict === 'PIVOT') {
+    closingMessage = `The committee consensus on ${ventureName} is RECOMMENDATION PIVOT (Score: ${score}/100). While the underlying problem has merit, the current target angle or monetization model introduces avoidable execution friction. Re-anchor the positioning into an acute high-ACV sub-niche with non-elastic budgets before investing in a full product build.`;
+  } else {
+    closingMessage = `The committee consensus on ${ventureName} is RECOMMENDATION DROP (Score: ${score}/100). The combination of high customer acquisition friction, low defensive switching moats, and platform dependency presents unfavorable risk-adjusted return dynamics. Founder hours and capital are better preserved for adjacent, higher-probability opportunities.`;
+  }
+  turns.push({
+    speaker: 'Elena Rostova',
+    role: 'Venture Capitalist',
+    message: closingMessage
+  });
+
+  return turns;
+}
+
 /**
  * Advanced Heuristic Analyzer that inspects semantic signals in the idea
  */
 function generateIntelligentHeuristicEvaluation(input: StartupIdeaInput, text: string): EvaluationResult {
-  const isB2B = /b2b|saas|enterprise|workflow|api|developer|devops|compliance|audit|security|infrastructure|hr|recruiting|sales|crm|finance|invoice|ops|logistics|healthcare|hipaa/i.test(text);
+  const isB2B = /b2b|saas|enterprise|workflow|api|developer|devops|compliance|audit|security|infrastructure|\bhr\b|recruiting|sales|crm|finance|invoice|\bops\b|logistics|healthcare|hipaa/i.test(text);
   const isMarketplace = /marketplace|airbnb|uber|connect|buyers and sellers|peer|p2p|creators and|freelance|booking platform|surplus/i.test(text);
   const isConsumer = /consumer|social|dating|gaming|fitness|app for|daily|habit|creator|influencer|fan|tiktok|instagram|foodie|leftover/i.test(text);
   const isAIHeavy = /ai|gpt|llm|agent|machine learning|model|clone|autonomous|nlp|neural|copilot|synthetic/i.test(text);
@@ -519,28 +632,22 @@ function generateIntelligentHeuristicEvaluation(input: StartupIdeaInput, text: s
       }
     ],
 
-    simulatedDebateSnippet: [
-      {
-        speaker: 'Marcus Vance',
-        role: 'Startup Founder',
-        message: `Look, the idea has real spark. But my concern is the initial friction. If a user needs 45 minutes to set this up, they will abandon the tab. Can we deliver the first value in 60 seconds?`
-      },
-      {
-        speaker: 'Dr. Aris Thorne',
-        role: 'Fractional CTO',
-        message: `From an infra perspective, Marcus is right. If we use progressive onboarding and sensible defaults, the customer gets immediate output without configuring anything upfront.`
-      },
-      {
-        speaker: 'Elena Rostova',
-        role: 'Venture Capitalist',
-        message: `Good. But let's talk TAM and pricing power. If you charge \$19/month, you need 4,000 customers just to hit \$1M ARR. That's a brutal consumer treadmill. I'd rather see you price at \$299/month for mid-market teams where the ROI is clear.`
-      },
-      {
-        speaker: 'Chloe Lin',
-        role: 'Growth Marketer',
-        message: `Agreed with Elena. At \$299/month, we can afford targeted account-based marketing and partner with existing industry influencers. Plus, the output itself can be branded so every report shared acts as an organic billboard.`
-      }
-    ]
+    simulatedDebateSnippet: generateVentureSpecificDebate({
+      ventureName: input.title || (input.description.match(/^([^:\-–—\n]{3,40})[:\-–—]/)?.[1]?.trim()) || (input.description.split(/\s+/).slice(0, 5).join(' ')),
+      description: input.description,
+      icp: input.targetAudience || (isB2B ? 'Engineering Leads & Operations Directors' : 'Tech-savvy End Users & Creators'),
+      monetization: input.monetizationModel || (isB2B ? 'Monthly Tiered Subscription (SaaS)' : 'Take-Rate Transaction Fee (10-15%)'),
+      verdict,
+      score: overallViabilityScore,
+      isAI: isAIHeavy,
+      isB2B,
+      isMarketplace,
+      isConsumer,
+      isDevTools: /developer|git|code|api|sdk|pr|ci\/cd|devops|terminal|docker|kubernetes|infra/i.test(text),
+      isHealth: /health|hipaa|medical|patient|clinic|doctor|pharma|biotech|medtech/i.test(text),
+      isLocal: isLocalService,
+      isFinTech: /finance|fintech|billing|invoice|payment|escrow|tax|accounting|stripe|banking/i.test(text)
+    })
   };
 }
 
